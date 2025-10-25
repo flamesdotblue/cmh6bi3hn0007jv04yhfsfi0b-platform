@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Info, Star } from 'lucide-react';
+import { Play, Star } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 export default function Portfolio({ currentPage, setCurrentPage, accent = '#00E5FF', mode, onPlayTrack, currentTrack, isPlaying }) {
@@ -193,7 +193,7 @@ function Music({ accent, onPlayTrack, currentTrack, isPlaying }) {
                 <div className="truncate text-sm font-semibold text-white">{t.title}</div>
                 <div className="truncate text-xs text-white/60">{t.artist}</div>
                 <div className="mt-2 h-1.5 w-full overflow-hidden rounded bg-white/10">
-                  <div className={`h-full w-1/3 bg-[var(--accent)] transition-all duration-500 ${active && isPlaying ? 'w-2/3' : 'w-1/4'}`} />
+                  <div className={`h-full bg-[var(--accent)] transition-all duration-500 ${active && isPlaying ? 'w-2/3' : 'w-1/4'}`} style={{ width: active && isPlaying ? '66%' : '25%' }} />
                 </div>
               </div>
               <div className="flex items-center justify-end pr-2">

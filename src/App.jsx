@@ -1,17 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { BrowserRouter, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Play, Pause } from 'lucide-react';
-
 import HeaderNav from './components/HeaderNav';
 import Hero from './components/Hero';
-import RouterViews from './components/RouterViews';
+import Portfolio from './components/Portfolio';
 import Footer from './components/Footer';
+import { Play, Pause } from 'lucide-react';
 
-function AppShell() {
-  const accent = '#C0A062'; // Muted Gold
-  const location = useLocation();
-
+export default function App() {
+  const [currentPage, setCurrentPage] = useState('home'); // 'home' | 'games' | 'music' | 'reviews'
   const [navSolid, setNavSolid] = useState(false);
   const [currentTrack, setCurrentTrack] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -20,14 +16,13 @@ function AppShell() {
   useEffect(() => {
     const onScroll = () => {
       const trigger = window.innerHeight * 0.7;
-      const onHome = location.pathname === '/';
-      const solid = window.scrollY > trigger || !onHome;
+      const solid = window.scrollY > trigger || currentPage !== 'home';
       setNavSolid(solid);
     };
     onScroll();
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
-  }, [location.pathname]);
+  }, [currentPage]);
 
   useEffect(() => {
     if (!audioRef.current) return;
@@ -48,6 +43,9 @@ function AppShell() {
     }
   };
 
+  const accent = '#00E5FF';
+  const text = '#EAEAEA';
+
   const pageVariants = useMemo(
     () => ({
       initial: { opacity: 0 },
@@ -58,15 +56,66 @@ function AppShell() {
   );
 
   return (
-    <div className="min-h-screen w-full bg-[#121212] text-[#EAEAEA] font-inter selection:bg-yellow-500/20 selection:text-[#EAEAEA]">
-      <HeaderNav accent={accent} solid={navSolid} />
+    <div className="min-h-screen w-full bg-[#121212] text-[#EAEAEA] font-inter selection:bg-cyan-500/20 selection:text-[#EAEAEA]">
+      <HeaderNav
+        solid={navSolid}
+        currentPage={currentPage}
+        onNavigate={(p) => {
+          setCurrentPage(p);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        accent={accent}
+      />
 
       <main className="relative">
         <AnimatePresence mode="wait">
-          <motion.div key={location.pathname} variants={pageVariants} initial="initial" animate="animate" exit="exit">
-            <Hero accent={accent} />
-            <RouterViews accent={accent} onPlayTrack={playTrack} currentTrack={currentTrack} isPlaying={isPlaying} />
-          </motion.div>
+          {currentPage === 'home' && (
+            <motion.section
+              key="home"
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+            >
+              <Hero
+                accent={accent}
+                text={text}
+                onCTAClick={() => {
+                  setCurrentPage('games');
+                  setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
+                }}
+              />
+              <Portfolio
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                accent={accent}
+                mode="home"
+                onPlayTrack={playTrack}
+                currentTrack={currentTrack}
+                isPlaying={isPlaying}
+              />
+            </motion.section>
+          )}
+
+          {currentPage !== 'home' && (
+            <motion.section
+              key={currentPage}
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="pt-24"
+            >
+              <Portfolio
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                accent={accent}
+                onPlayTrack={playTrack}
+                currentTrack={currentTrack}
+                isPlaying={isPlaying}
+              />
+            </motion.section>
+          )}
         </AnimatePresence>
       </main>
 
@@ -78,7 +127,10 @@ function AppShell() {
             <div className="flex items-center gap-3 p-3">
               <button
                 aria-label={isPlaying ? 'Pause' : 'Play'}
-                onClick={() => { if (!currentTrack) return; setIsPlaying((p) => !p); }}
+                onClick={() => {
+                  if (!currentTrack) return;
+                  setIsPlaying((p) => !p);
+                }}
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white hover:scale-105 hover:border-[var(--accent)] hover:text-[var(--accent)] transition"
                 style={{ ['--accent']: accent }}
               >
@@ -89,7 +141,7 @@ function AppShell() {
                   {currentTrack?.artwork ? (
                     <img src={currentTrack.artwork} alt="artwork" className="h-full w-full object-cover" />
                   ) : (
-                    <div className="h-full w-full bg-gradient-to-br from-yellow-500/20 to-yellow-400/5" />
+                    <div className="h-full w-full bg-gradient-to-br from-cyan-500/20 to-cyan-400/5" />
                   )}
                 </div>
                 <div className="min-w-0">
@@ -103,13 +155,5 @@ function AppShell() {
         </div>
       </div>
     </div>
-  );
-}
-
-export default function App() {
-  return (
-    <BrowserRouter>
-      <AppShell />
-    </BrowserRouter>
   );
 }
